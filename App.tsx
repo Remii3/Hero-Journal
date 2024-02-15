@@ -1,10 +1,13 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet } from "react-native";
-import { Provider } from "react-redux";
-import { store } from "./src/store/store";
-import { NavigationContainer } from "@react-navigation/native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import StackNavigation from "./src/screens/RootStack/RootStack";
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet } from 'react-native';
+import { Provider } from 'react-redux';
+import { store } from './src/store/store';
+import { NavigationContainer } from '@react-navigation/native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import StackNavigation from './src/screens/RootStack/RootStack';
+import { QueryClient, QueryClientProvider } from 'react-query';
+
+const queryClient = new QueryClient();
 
 export default function App() {
   return (
@@ -12,7 +15,9 @@ export default function App() {
       <NavigationContainer>
         <StatusBar style="auto" />
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <StackNavigation />
+          <QueryClientProvider client={queryClient}>
+            <StackNavigation />
+          </QueryClientProvider>
         </GestureHandlerRootView>
       </NavigationContainer>
     </Provider>
@@ -22,8 +27,8 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

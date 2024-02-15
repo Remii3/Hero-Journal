@@ -2,7 +2,7 @@ import { StyleSheet } from "react-native";
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import DailyScreen from "./DailyScreen";
-import TasksScreen from "./TasksScreen";
+import TasksScreen from "./ToDoScreen";
 
 const bottomTabNavigator = createBottomTabNavigator();
 
@@ -15,7 +15,7 @@ export default function HeroBottom() {
   return (
     <bottomTabNavigator.Navigator>
       <bottomTabNavigator.Screen
-        name="Tasks"
+        name="ToDo"
         options={{ headerShown: false }}
         component={TasksScreen}
       />

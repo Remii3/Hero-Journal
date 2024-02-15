@@ -7,7 +7,7 @@ import { useDispatch } from "react-redux";
 import { login } from "../../store/slices/userSlice";
 
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../../../App";
+import { RootStackParamList } from "./RootStack";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Login">;
 
