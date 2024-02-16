@@ -51,6 +51,12 @@ export default function TodoForm({
   const [show, setShow] = useState(false);
   const [taskCheckListItem, setTaskCheckListItem] = useState('');
 
+  const { mutate, isLoading, isError, error } = useMutation(uploadNewTodo, {
+    onSuccess: () => {
+      newTaskFormVisibilityHandler(false);
+    },
+  });
+
   const changeTodoData = (key: keyof TodoTask, value: string) => {
     setTodoData((prev) => ({ ...prev, [key]: value }));
   };
@@ -85,12 +91,6 @@ export default function TodoForm({
   const showDatepicker = () => {
     setShow(true);
   };
-
-  const { mutate, isLoading, isError, error } = useMutation(uploadNewTodo, {
-    onSuccess: () => {
-      newTaskFormVisibilityHandler(false);
-    },
-  });
 
   const addTodoHandler = async () => {
     mutate(todoData);

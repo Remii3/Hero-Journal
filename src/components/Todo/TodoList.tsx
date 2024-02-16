@@ -53,10 +53,6 @@ export default function ToDoList() {
     error: todoListError,
   } = useQuery('todos', () => fetchTodos(user.user!));
 
-  if (todoListIsLoading) return <Text>Loading...</Text>;
-  if (todoListIsError)
-    return <Text>An error occurred: {(todoListError as Error).message}</Text>;
-
   const {
     mutate,
     isLoading: finishTaskIsLoading,
@@ -73,9 +69,13 @@ export default function ToDoList() {
   );
 
   const addTodoHandler = async (id: string, newStatus: TodoStatus) => {
-    const status = newStatus === 'done' ? 'done' : 'pending';
+    const status = newStatus === 'done' ? 'pending' : 'done';
     mutate({ id, status });
   };
+
+  if (todoListIsLoading) return <Text>Loading...</Text>;
+  if (todoListIsError)
+    return <Text>An error occurred: {(todoListError as Error).message}</Text>;
 
   return (
     <View>
