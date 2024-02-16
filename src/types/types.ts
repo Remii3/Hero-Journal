@@ -1,10 +1,11 @@
+export type TodoStatus = 'done' | 'pending';
 export type TodoTask = {
   title: string;
   description: string;
   deadline: Date;
   checkList: { id: string; text: string }[];
-  status: "done" | "pending";
-  difficulty: "easy" | "medium" | "hard";
+  status: TodoStatus;
+  difficulty: 'easy' | 'medium' | 'hard';
   userId: string;
 };
 

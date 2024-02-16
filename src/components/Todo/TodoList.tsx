@@ -1,16 +1,18 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import {
   collection,
+  doc,
   getDocs,
   getFirestore,
   query,
+  updateDoc,
   where,
 } from 'firebase/firestore';
-import { useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
 import { selectuser } from '../../store/slices/userSlice';
-import { User } from '../../types/types';
+import { TodoStatus, User } from '../../types/types';
 
 const fetchTodos = async (user: User) => {
   try {
@@ -32,26 +34,65 @@ const fetchTodos = async (user: User) => {
   }
 };
 
+const finishTodo = async (id: string, status: TodoStatus) => {
+  const db = getFirestore();
+  const todoRef = doc(db, 'todo', id);
+  await updateDoc(todoRef, {
+    status: status,
+  });
+};
+
 export default function ToDoList() {
   const user = useSelector(selectuser);
+  const queryClient = useQueryClient();
 
   const {
-    data: todos,
-    isLoading,
-    error,
+    data: todoList,
+    isLoading: todoListIsLoading,
+    isError: todoListIsError,
+    error: todoListError,
   } = useQuery('todos', () => fetchTodos(user.user!));
 
-  if (isLoading) return <Text>Loading...</Text>;
-  if (error instanceof Error)
-    return <Text>An error occurred: {error.message}</Text>;
+  if (todoListIsLoading) return <Text>Loading...</Text>;
+  if (todoListIsError)
+    return <Text>An error occurred: {(todoListError as Error).message}</Text>;
+
+  const {
+    mutate,
+    isLoading: finishTaskIsLoading,
+    isError: finishTaskIsError,
+    error: finishTaskError,
+  } = useMutation(
+    (params: { id: string; status: TodoStatus }) =>
+      finishTodo(params.id, params.status),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('todos');
+      },
+    },
+  );
+
+  const addTodoHandler = async (id: string, newStatus: TodoStatus) => {
+    const status = newStatus === 'done' ? 'done' : 'pending';
+    mutate({ id, status });
+  };
 
   return (
     <View>
       <ScrollView>
-        {todos &&
-          todos.map((todo) => (
+        {todoList &&
+          todoList.map((todo) => (
             <View key={todo.id}>
+              <Button
+                title="Finish"
+                disabled={finishTaskIsLoading}
+                onPress={() => addTodoHandler(todo.id, todo.status)}
+              />
+              {finishTaskIsError && (
+                <Text>{(finishTaskError as Error).message}</Text>
+              )}
               <Text>{todo.title}</Text>
+              <Text>{todo.status}</Text>
             </View>
           ))}
       </ScrollView>
