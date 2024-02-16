@@ -13,24 +13,32 @@ import { useSelector } from 'react-redux';
 import { selectuser } from '../../store/slices/userSlice';
 import { addDoc, collection, getFirestore } from 'firebase/firestore';
 import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
+import { useMutation } from 'react-query';
 
 type TodoFormProps = {
   showNewTask: boolean;
   newTaskFormVisibilityHandler: (visible: boolean) => void;
 };
 
+const uploadNewTodo = async (todo: TodoTask) => {
+  const db = getFirestore();
+
+  try {
+    const docRef = await addDoc(collection(db, 'todo'), todo);
+    return docRef.id;
+  } catch (err: unknown) {
+    return Promise.reject(new Error((err as Error).message));
+  }
+};
+
 export default function TodoForm({
   showNewTask,
   newTaskFormVisibilityHandler,
 }: TodoFormProps) {
-  const db = getFirestore();
   const user = useSelector(selectuser);
-  const [uploadStatus, setUploadStatus] = useState({
-    loading: false,
-    error: '',
-  });
-
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
   const [taskTitle, setTaskTitle] = useState('');
@@ -49,6 +57,12 @@ export default function TodoForm({
     setTaskDescription(text);
   };
 
+  const { mutate, isLoading, isError, error } = useMutation(uploadNewTodo, {
+    onSuccess: () => {
+      newTaskFormVisibilityHandler(false);
+    },
+  });
+
   const addTodoHandler = async () => {
     const task = {
       title: taskTitle,
@@ -59,19 +73,10 @@ export default function TodoForm({
       deadline: date,
       checkList: taskCheckList,
     } as TodoTask;
-
-    try {
-      setUploadStatus({ loading: true, error: '' });
-      const docRef = await addDoc(collection(db, 'todo'), task);
-      console.log('Document written with ID: ', docRef.id);
-      setUploadStatus({ loading: false, error: '' });
-      newTaskFormVisibilityHandler(false);
-    } catch (err) {
-      setUploadStatus({ loading: false, error: err.message });
-    }
+    mutate(task);
   };
 
-  const onChangeDate = (event, selectedDate) => {
+  const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
     const currentDate = selectedDate || date;
     setShow(Platform.OS === 'ios');
     setDate(currentDate);
@@ -83,7 +88,7 @@ export default function TodoForm({
 
   return (
     <Modal animationType="slide" visible={showNewTask}>
-      {!uploadStatus.loading && (
+      {!isLoading && (
         <View>
           <View>
             <CustomTextInput
@@ -159,12 +164,11 @@ export default function TodoForm({
               ))}
             </ScrollView>
           </View>
+          {isError && <View>{(error as Error).message}</View>}
         </View>
       )}
-      {!uploadStatus.loading && (
-        <Button title="Add" onPress={() => addTodoHandler()} />
-      )}
-      {uploadStatus.loading && <Button title="Loading..." disabled />}
+      {!isLoading && <Button title="Add" onPress={() => addTodoHandler()} />}
+      {isLoading && <Button title="Loading..." disabled />}
       <Button
         title="Back"
         onPress={() => newTaskFormVisibilityHandler(false)}
