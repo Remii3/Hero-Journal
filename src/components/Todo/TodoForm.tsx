@@ -39,22 +39,51 @@ export default function TodoForm({
   newTaskFormVisibilityHandler,
 }: TodoFormProps) {
   const user = useSelector(selectuser);
-  const [date, setDate] = useState(new Date());
+  const [todoData, setTodoData] = useState({
+    title: '',
+    description: '',
+    difficulty: 'easy',
+    deadline: new Date(),
+    status: 'pending',
+    checkList: [],
+    userId: user.user?.uid ?? '',
+  } as TodoTask);
   const [show, setShow] = useState(false);
-  const [taskTitle, setTaskTitle] = useState('');
-  const [taskDescription, setTaskDescription] = useState('');
-  const [taskDifficulty, setTaskDifficulty] = useState('easy');
   const [taskCheckListItem, setTaskCheckListItem] = useState('');
-  const [taskCheckList, setTaskCheckList] = useState(
-    [] as { id: string; text: string }[],
-  );
 
-  const changeTaskTitle = (text: string) => {
-    setTaskTitle(text);
+  const changeTodoData = (key: keyof TodoTask, value: string) => {
+    setTodoData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const changeTaskDescription = (text: string) => {
-    setTaskDescription(text);
+  const onAddCheckListItem = () => {
+    setTodoData((prev) => ({
+      ...prev,
+      checkList: [
+        ...prev.checkList,
+        { id: Date.now().toString(), text: taskCheckListItem },
+      ],
+    }));
+    setTaskCheckListItem('');
+  };
+
+  const onRemoveCheckListItem = (id: string) => {
+    setTodoData((prev) => ({
+      ...prev,
+      checkList: prev.checkList.filter((item) => item.id !== id),
+    }));
+  };
+
+  const onChangeDeadline = (
+    event: DateTimePickerEvent,
+    selectedDate?: Date,
+  ) => {
+    const currentDate = selectedDate || todoData.deadline;
+    setShow(Platform.OS === 'ios');
+    setTodoData((prev) => ({ ...prev, deadline: currentDate }));
+  };
+
+  const showDatepicker = () => {
+    setShow(true);
   };
 
   const { mutate, isLoading, isError, error } = useMutation(uploadNewTodo, {
@@ -64,26 +93,7 @@ export default function TodoForm({
   });
 
   const addTodoHandler = async () => {
-    const task = {
-      title: taskTitle,
-      userId: user.user?.uid ?? '',
-      description: taskDescription,
-      status: 'pending',
-      difficulty: taskDifficulty,
-      deadline: date,
-      checkList: taskCheckList,
-    } as TodoTask;
-    mutate(task);
-  };
-
-  const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    const currentDate = selectedDate || date;
-    setShow(Platform.OS === 'ios');
-    setDate(currentDate);
-  };
-
-  const showDatepicker = () => {
-    setShow(true);
+    mutate(todoData);
   };
 
   return (
@@ -92,23 +102,23 @@ export default function TodoForm({
         <View>
           <View>
             <CustomTextInput
-              onChange={(text) => changeTaskTitle(text)}
-              value={taskTitle}
+              onChange={(text) => changeTodoData('title', text)}
+              value={todoData.title}
               placeholder="Title"
             />
           </View>
           <View>
             <CustomTextInput
-              onChange={(text) => changeTaskDescription(text)}
-              value={taskDescription}
+              onChange={(text) => changeTodoData('description', text)}
+              value={todoData.description}
               placeholder="Description"
             />
           </View>
           <View>
             <Picker
-              selectedValue={taskDifficulty}
-              onValueChange={(itemValue, itemIndex) =>
-                setTaskDifficulty(itemValue as string)
+              selectedValue={todoData.difficulty}
+              onValueChange={(itemValue) =>
+                changeTodoData('difficulty', itemValue)
               }
             >
               <Picker.Item label="Easy" value="easy" />
@@ -123,11 +133,11 @@ export default function TodoForm({
             {show && (
               <DateTimePicker
                 testID="dateTimePicker"
-                value={date}
+                value={todoData.deadline}
                 mode="date"
                 is24Hour={true}
                 display="default"
-                onChange={onChangeDate}
+                onChange={onChangeDeadline}
               />
             )}
           </View>
@@ -139,26 +149,13 @@ export default function TodoForm({
                   value={taskCheckListItem}
                   placeholder="Add a subtask"
                 />
-                <Button
-                  title="+"
-                  onPress={() =>
-                    setTaskCheckList((prev) => [
-                      ...prev,
-                      { id: Math.random().toString(), text: taskCheckListItem },
-                    ])
-                  }
-                />
+                <Button title="+" onPress={() => onAddCheckListItem()} />
               </View>
-              {taskCheckList.map((item) => (
+              {todoData.checkList.map((item) => (
                 <View key={item.id}>
                   <Button
                     title={item.text}
-                    onPress={() => {
-                      const newList = taskCheckList.filter(
-                        (i) => i.id !== item.id,
-                      );
-                      setTaskCheckList(newList);
-                    }}
+                    onPress={() => onRemoveCheckListItem(item.id)}
                   />
                 </View>
               ))}
