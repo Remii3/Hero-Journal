@@ -7,6 +7,7 @@ import RegisterScreen from './RegisterScreen';
 import LoginScreen from './LoginScreen';
 import DrawerNavigation from '../HomeDrawer/HomeDrawer';
 import TodoItemScreen from './TodoItemScreen';
+import DailyItemScreen from './DailyItemScreen';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -30,6 +31,7 @@ export default function RootStack() {
             component={DrawerNavigation}
           />
           <stackNavigator.Screen name="TodoItem" component={TodoItemScreen} />
+          <stackNavigator.Screen name="DailyItem" component={DailyItemScreen} />
         </>
       ) : (
         <>
