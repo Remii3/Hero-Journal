@@ -10,7 +10,7 @@ import { useDispatch } from 'react-redux';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../../Constants/firebaseConfig';
 import { logout } from '../../store/slices/userSlice';
-import TasksBottom from '../HeroBottom/TasksBottom';
+import TasksBottom from '../TasksBottom/TasksBottom';
 
 export type HomeDrawerParamList = {
   Tasks: undefined;

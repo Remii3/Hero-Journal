@@ -1,18 +1,9 @@
 import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
-import {
-  collection,
-  doc,
-  getDocs,
-  getFirestore,
-  query,
-  updateDoc,
-  where,
-} from 'firebase/firestore';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
 import { selectuser } from '../../store/slices/userSlice';
-import { TodoStatus, User } from '../../types/types';
+import { TodoTask, User } from '../../types/types';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../screens/RootStack/RootStack';
@@ -22,51 +13,36 @@ type TodoListNavigationProp = NativeStackNavigationProp<
   'TodoItem'
 >;
 
-const fetchTodos = async (user: User) => {
-  try {
-    const db = getFirestore();
-    const q = query(collection(db, 'todo'), where('userId', '==', user.uid));
-    const querySnapshot = await getDocs(q);
-    const todos = querySnapshot.docs.map((doc) => {
-      const docData = doc.data();
-      return {
-        id: doc.id,
-        title: docData.title,
-        status: docData.status,
-        difficulty: docData.difficulty,
-      };
-    });
-    return todos;
-  } catch (err) {
-    return Promise.reject(new Error((err as Error).message));
-  }
+type ToDoListProps = {
+  fetchTodos: (user: User) => Promise<
+    {
+      id: string;
+      title: string;
+      status: TodoTask['status'];
+      difficulty: TodoTask['difficulty'];
+    }[]
+  >;
+  finishTodo: (id: string, status: TodoTask['status']) => Promise<void>;
 };
 
-const finishTodo = async (id: string, status: TodoStatus) => {
-  const db = getFirestore();
-  const todoRef = doc(db, 'todo', id);
-  await updateDoc(todoRef, {
-    status: status,
-  });
-};
-export default function ToDoList() {
+export default function ToDoList({ fetchTodos, finishTodo }: ToDoListProps) {
   const user = useSelector(selectuser);
   const queryClient = useQueryClient();
   const navigation = useNavigation<TodoListNavigationProp>();
   const {
     data: todoList,
-    isLoading: todoListIsLoading,
-    isError: todoListIsError,
-    error: todoListError,
+    isLoading: isLoadingTodoList,
+    isError: isErrorTodoList,
+    error: errorTodoList,
   } = useQuery('todos', () => fetchTodos(user.user!));
 
   const {
-    mutate,
-    isLoading: finishTaskIsLoading,
-    isError: finishTaskIsError,
-    error: finishTaskError,
+    mutate: mutateFinishTodo,
+    isLoading: isLoadingFinishTask,
+    isError: isErrorFinishTask,
+    error: errorFinishTask,
   } = useMutation(
-    (params: { id: string; status: TodoStatus }) =>
+    (params: { id: string; status: TodoTask['status'] }) =>
       finishTodo(params.id, params.status),
     {
       onSuccess: () => {
@@ -75,38 +51,45 @@ export default function ToDoList() {
     },
   );
 
-  const addTodoHandler = async (id: string, newStatus: TodoStatus) => {
+  const finishTodoHandler = async (
+    id: string,
+    newStatus: TodoTask['status'],
+  ) => {
     const status = newStatus === 'done' ? 'pending' : 'done';
-    mutate({ id, status });
+    mutateFinishTodo({ id, status });
   };
-
-  if (todoListIsLoading) return <Text>Loading...</Text>;
-  if (todoListIsError)
-    return <Text>An error occurred: {(todoListError as Error).message}</Text>;
 
   return (
     <View>
-      <ScrollView>
-        {todoList &&
-          todoList.map((todo) => (
-            <View key={todo.id}>
-              <Button
-                title="Finish"
-                disabled={finishTaskIsLoading}
-                onPress={() => addTodoHandler(todo.id, todo.status)}
-              />
-              {finishTaskIsError && (
-                <Text>{(finishTaskError as Error).message}</Text>
-              )}
-              <Button
-                title="Check it out!"
-                onPress={() => navigation.navigate('TodoItem', { id: todo.id })}
-              />
-              <Text>{todo.title}</Text>
-              <Text>{todo.status}</Text>
-            </View>
-          ))}
-      </ScrollView>
+      {isErrorTodoList && <Text>{(errorTodoList as Error).message}</Text>}
+      {isLoadingTodoList && <Text>Loading...</Text>}
+      {todoList && (
+        <View>
+          {todoList.length === 0 && <Text>No tasks</Text>}
+          <ScrollView>
+            {todoList.map((todo) => (
+              <View key={todo.id}>
+                <Button
+                  title={isLoadingFinishTask ? 'Loading...' : 'Finish'}
+                  disabled={isLoadingFinishTask}
+                  onPress={() => finishTodoHandler(todo.id, todo.status)}
+                />
+                {isErrorFinishTask && (
+                  <Text>{(errorFinishTask as Error).message}</Text>
+                )}
+                <Button
+                  title="Check it out!"
+                  onPress={() =>
+                    navigation.navigate('TodoItem', { id: todo.id })
+                  }
+                />
+                <Text>{todo.title}</Text>
+                <Text>{todo.status}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
     </View>
   );
 }

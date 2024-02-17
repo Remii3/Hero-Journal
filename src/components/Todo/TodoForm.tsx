@@ -11,33 +11,24 @@ import CustomTextInput from '../ui/CustomTextInput';
 import { TodoTask } from '../../types/types';
 import { useSelector } from 'react-redux';
 import { selectuser } from '../../store/slices/userSlice';
-import { addDoc, collection, getFirestore } from 'firebase/firestore';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker, {
   DateTimePickerEvent,
 } from '@react-native-community/datetimepicker';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 
 type TodoFormProps = {
   showNewTask: boolean;
   newTaskFormVisibilityHandler: (visible: boolean) => void;
-};
-
-const uploadNewTodo = async (todo: TodoTask) => {
-  const db = getFirestore();
-
-  try {
-    const docRef = await addDoc(collection(db, 'todo'), todo);
-    return docRef.id;
-  } catch (err: unknown) {
-    return Promise.reject(new Error((err as Error).message));
-  }
+  uploadNewTodo: (todo: TodoTask) => Promise<string>;
 };
 
 export default function TodoForm({
   showNewTask,
   newTaskFormVisibilityHandler,
+  uploadNewTodo,
 }: TodoFormProps) {
+  const queryClient = useQueryClient();
   const user = useSelector(selectuser);
   const [todoData, setTodoData] = useState({
     title: '',
@@ -47,12 +38,19 @@ export default function TodoForm({
     status: 'pending',
     checkList: [],
     userId: user.user?.uid ?? '',
+    createdAt: new Date(),
   } as TodoTask);
   const [show, setShow] = useState(false);
   const [taskCheckListItem, setTaskCheckListItem] = useState('');
 
-  const { mutate, isLoading, isError, error } = useMutation(uploadNewTodo, {
+  const {
+    mutate: mutateUploadTodo,
+    isLoading: isLoadingUploadTodo,
+    isError: isErrorUploadTodo,
+    error: errorUploadTodo,
+  } = useMutation(uploadNewTodo, {
     onSuccess: () => {
+      queryClient.invalidateQueries('todos');
       newTaskFormVisibilityHandler(false);
     },
   });
@@ -93,12 +91,12 @@ export default function TodoForm({
   };
 
   const addTodoHandler = async () => {
-    mutate(todoData);
+    mutateUploadTodo(todoData);
   };
 
   return (
     <Modal animationType="slide" visible={showNewTask}>
-      {!isLoading && (
+      {!isLoadingUploadTodo && (
         <View>
           <View>
             <CustomTextInput
@@ -135,8 +133,8 @@ export default function TodoForm({
                 testID="dateTimePicker"
                 value={todoData.deadline as Date}
                 mode="date"
-                is24Hour={true}
-                display="default"
+                minimumDate={new Date(Date.now() + 86400000)} // 24 hours from now
+                display="calendar"
                 onChange={onChangeDeadline}
               />
             )}
@@ -161,11 +159,16 @@ export default function TodoForm({
               ))}
             </ScrollView>
           </View>
-          {isError && <View>{(error as Error).message}</View>}
+          {isErrorUploadTodo && (
+            <View>{(errorUploadTodo as Error).message}</View>
+          )}
         </View>
       )}
-      {!isLoading && <Button title="Add" onPress={() => addTodoHandler()} />}
-      {isLoading && <Button title="Loading..." disabled />}
+      <Button
+        title={isLoadingUploadTodo ? 'Loading' : 'Upload'}
+        onPress={() => addTodoHandler()}
+        disabled={isLoadingUploadTodo}
+      />
       <Button
         title="Back"
         onPress={() => newTaskFormVisibilityHandler(false)}

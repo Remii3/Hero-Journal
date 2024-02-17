@@ -1,14 +1,14 @@
 import { Timestamp } from 'firebase/firestore';
 
-export type TodoStatus = 'done' | 'pending';
 export type TodoTask = {
   title: string;
   description: string;
   deadline: Date | Timestamp;
   checkList: { id: string; text: string }[];
-  status: TodoStatus;
+  status: 'done' | 'pending';
   difficulty: 'easy' | 'medium' | 'hard';
   userId: string;
+  createdAt: Date | Timestamp;
 };
 
 export type User = {
