@@ -11,6 +11,16 @@ export type TodoTask = {
   createdAt: Date | Timestamp;
 };
 
+export type DailyTask = {
+  title: string;
+  description: string;
+  status: 'done' | 'pending';
+  difficulty: 'easy' | 'medium' | 'hard';
+  userId: string;
+  finishTime: Date | Timestamp | null;
+  createdAt: Date | Timestamp;
+};
+
 export type User = {
   uid: string;
   email: string;

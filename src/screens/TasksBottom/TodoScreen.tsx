@@ -25,7 +25,7 @@ const fetchTodos = async (user: User) => {
     );
     const querySnapshot = await getDocs(q);
     const todos = querySnapshot.docs.map((doc) => {
-      const docData = doc.data();
+      const docData = doc.data() as TodoTask;
       return {
         id: doc.id,
         title: docData.title,
@@ -59,21 +59,21 @@ const finishTodo = async (id: string, status: TodoTask['status']) => {
 };
 
 export default function TodoScreen() {
-  const [showNewTask, setShowNewTask] = useState(false);
+  const [showNewTodo, setShowNewTodo] = useState(false);
 
-  const newTaskFormVisibilityHandler = (visible: boolean) => {
-    setShowNewTask(visible);
+  const newTodoFormVisibilityHandler = (visible: boolean) => {
+    setShowNewTodo(visible);
   };
 
   return (
     <View>
       <TodoForm
-        newTaskFormVisibilityHandler={newTaskFormVisibilityHandler}
-        showNewTask={showNewTask}
+        newTodoFormVisibilityHandler={newTodoFormVisibilityHandler}
+        showNewTodo={showNewTodo}
         uploadNewTodo={uploadNewTodo}
       />
       <View>
-        <Button title="+" onPress={() => newTaskFormVisibilityHandler(true)} />
+        <Button title="+" onPress={() => newTodoFormVisibilityHandler(true)} />
       </View>
       <View>
         <ToDoList fetchTodos={fetchTodos} finishTodo={finishTodo} />

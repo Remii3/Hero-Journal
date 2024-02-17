@@ -18,19 +18,19 @@ import DateTimePicker, {
 import { useMutation, useQueryClient } from 'react-query';
 
 type TodoFormProps = {
-  showNewTask: boolean;
-  newTaskFormVisibilityHandler: (visible: boolean) => void;
+  showNewTodo: boolean;
+  newTodoFormVisibilityHandler: (visible: boolean) => void;
   uploadNewTodo: (todo: TodoTask) => Promise<string>;
 };
 
 export default function TodoForm({
-  showNewTask,
-  newTaskFormVisibilityHandler,
+  showNewTodo,
+  newTodoFormVisibilityHandler,
   uploadNewTodo,
 }: TodoFormProps) {
   const queryClient = useQueryClient();
   const user = useSelector(selectuser);
-  const [todoData, setTodoData] = useState({
+  const [todoData, setTodoData] = useState<TodoTask>({
     title: '',
     description: '',
     difficulty: 'easy',
@@ -39,7 +39,7 @@ export default function TodoForm({
     checkList: [],
     userId: user.user?.uid ?? '',
     createdAt: new Date(),
-  } as TodoTask);
+  });
   const [show, setShow] = useState(false);
   const [taskCheckListItem, setTaskCheckListItem] = useState('');
 
@@ -51,7 +51,7 @@ export default function TodoForm({
   } = useMutation(uploadNewTodo, {
     onSuccess: () => {
       queryClient.invalidateQueries('todos');
-      newTaskFormVisibilityHandler(false);
+      newTodoFormVisibilityHandler(false);
     },
   });
 
@@ -95,7 +95,7 @@ export default function TodoForm({
   };
 
   return (
-    <Modal animationType="slide" visible={showNewTask}>
+    <Modal animationType="slide" visible={showNewTodo}>
       {!isLoadingUploadTodo && (
         <View>
           <View>
@@ -171,7 +171,7 @@ export default function TodoForm({
       />
       <Button
         title="Back"
-        onPress={() => newTaskFormVisibilityHandler(false)}
+        onPress={() => newTodoFormVisibilityHandler(false)}
       />
     </Modal>
   );

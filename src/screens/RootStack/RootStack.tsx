@@ -13,6 +13,7 @@ export type RootStackParamList = {
   Register: undefined;
   Login: undefined;
   TodoItem: { id: string };
+  DailyItem: { id: string };
 };
 
 const stackNavigator = createNativeStackNavigator<RootStackParamList>();
