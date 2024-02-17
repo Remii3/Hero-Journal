@@ -34,19 +34,19 @@ export default function ToDoList({ fetchTodos, finishTodo }: ToDoListProps) {
     isLoading: isLoadingTodoList,
     isError: isErrorTodoList,
     error: errorTodoList,
-  } = useQuery('todos', () => fetchTodos(user.user!));
+  } = useQuery('todoList', () => fetchTodos(user.user!));
 
   const {
     mutate: mutateFinishTodo,
-    isLoading: isLoadingFinishTask,
-    isError: isErrorFinishTask,
-    error: errorFinishTask,
+    isLoading: isLoadingFinishTodo,
+    isError: isErrorFinishTodo,
+    error: errorFinishTodo,
   } = useMutation(
     (params: { id: string; status: TodoTask['status'] }) =>
       finishTodo(params.id, params.status),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries('todos');
+        queryClient.invalidateQueries('todoList');
       },
     },
   );
@@ -70,12 +70,12 @@ export default function ToDoList({ fetchTodos, finishTodo }: ToDoListProps) {
             {todoList.map((todo) => (
               <View key={todo.id}>
                 <Button
-                  title={isLoadingFinishTask ? 'Loading...' : 'Finish'}
-                  disabled={isLoadingFinishTask}
+                  title={isLoadingFinishTodo ? 'Loading...' : 'Finish'}
+                  disabled={isLoadingFinishTodo}
                   onPress={() => finishTodoHandler(todo.id, todo.status)}
                 />
-                {isErrorFinishTask && (
-                  <Text>{(errorFinishTask as Error).message}</Text>
+                {isErrorFinishTodo && (
+                  <Text>{(errorFinishTodo as Error).message}</Text>
                 )}
                 <Button
                   title="Check it out!"

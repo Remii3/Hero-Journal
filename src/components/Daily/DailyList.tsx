@@ -1,12 +1,12 @@
 import { Button, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
-import { User } from '../../types/types';
+import { DailyTask, User } from '../../types/types';
 import { useSelector } from 'react-redux';
 import { selectuser } from '../../store/slices/userSlice';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../screens/RootStack/RootStack';
-import { useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { FirebaseError } from 'firebase/app';
 import { ScrollView } from 'react-native-gesture-handler';
 
@@ -16,11 +16,25 @@ type RootNavigationTypes = NativeStackNavigationProp<
 >;
 
 type DailyListProps = {
-  fetchDailyList: (user: User) => Promise<{ id: string; title: string }[]>;
+  fetchDailyList: (
+    user: User,
+  ) => Promise<
+    {
+      id: string;
+      title: string;
+      status: DailyTask['status'];
+      difficulty: DailyTask['difficulty'];
+    }[]
+  >;
+  finishDaily: (id: string, status: DailyTask['status']) => Promise<void>;
 };
 
-export default function DailyList({ fetchDailyList }: DailyListProps) {
+export default function DailyList({
+  fetchDailyList,
+  finishDaily,
+}: DailyListProps) {
   const user = useSelector(selectuser);
+  const queryClient = useQueryClient();
   const navigation = useNavigation<RootNavigationTypes>();
   const {
     data: dailyList,
@@ -28,6 +42,29 @@ export default function DailyList({ fetchDailyList }: DailyListProps) {
     isError: isErrorDailyList,
     error: errorDailyList,
   } = useQuery('dailyList', () => fetchDailyList(user.user!));
+
+  const {
+    mutate: mutateFinishDaily,
+    isLoading: isLoadingFinishDaily,
+    isError: isErrorFinishDaily,
+    error: errorFinishDaily,
+  } = useMutation(
+    (params: { id: string; status: DailyTask['status'] }) =>
+      finishDaily(params.id, params.status),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('dailyList');
+      },
+    },
+  );
+
+  const finishDailyHandler = async (
+    id: string,
+    newStatus: DailyTask['status'],
+  ) => {
+    const status = newStatus === 'done' ? 'pending' : 'done';
+    mutateFinishDaily({ id, status });
+  };
 
   return (
     <View>
@@ -42,6 +79,14 @@ export default function DailyList({ fetchDailyList }: DailyListProps) {
             <ScrollView>
               {dailyList.map((daily) => (
                 <View key={daily.id}>
+                  <Button
+                    title={isLoadingFinishDaily ? 'Loading...' : 'Finish'}
+                    disabled={isLoadingFinishDaily}
+                    onPress={() => finishDailyHandler(daily.id, daily.status)}
+                  />
+                  {isErrorFinishDaily && (
+                    <Text>{(errorFinishDaily as Error).message}</Text>
+                  )}
                   <Button
                     title="Check it out!"
                     onPress={() =>

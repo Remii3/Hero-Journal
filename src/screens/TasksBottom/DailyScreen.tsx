@@ -4,10 +4,12 @@ import { DailyTask, User } from '../../types/types';
 import {
   addDoc,
   collection,
+  doc,
   getDocs,
   getFirestore,
   orderBy,
   query,
+  updateDoc,
   where,
 } from 'firebase/firestore';
 import DailyList from '../../components/Daily/DailyList';
@@ -27,6 +29,8 @@ const fetchDailyTasks = async (user: User) => {
       return {
         id: doc.id,
         title: docData.title,
+        status: docData.status,
+        difficulty: docData.difficulty,
       };
     });
     return daily;
@@ -46,6 +50,14 @@ const uploadNewDailyTask = async (daily: any) => {
   }
 };
 
+const finishDaily = async (id: string, status: DailyTask['status']) => {
+  const db = getFirestore();
+  const todoRef = doc(db, 'daily', id);
+  await updateDoc(todoRef, {
+    status: status,
+  });
+};
+
 export default function DailyScreen() {
   const [showNewDaily, setShowNewDaily] = useState(false);
 
@@ -63,7 +75,7 @@ export default function DailyScreen() {
         <Button title="+" onPress={() => newDailyFormVisibilityHandler(true)} />
       </View>
       <View>
-        <DailyList fetchDailyList={fetchDailyTasks} />
+        <DailyList fetchDailyList={fetchDailyTasks} finishDaily={finishDaily} />
       </View>
       <Text>DailyScreen</Text>
     </View>

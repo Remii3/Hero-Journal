@@ -50,7 +50,7 @@ export default function TodoForm({
     error: errorUploadTodo,
   } = useMutation(uploadNewTodo, {
     onSuccess: () => {
-      queryClient.invalidateQueries('todos');
+      queryClient.invalidateQueries('todoList');
       newTodoFormVisibilityHandler(false);
     },
   });
