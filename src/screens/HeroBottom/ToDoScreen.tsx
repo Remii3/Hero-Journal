@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import TodoForm from '../../components/Todo/TodoForm';
 import ToDoList from '../../components/Todo/TodoList';
 
-export default function ToDoScreen() {
+export default function TodoScreen() {
   const [showNewTask, setShowNewTask] = useState(false);
 
   const newTaskFormVisibilityHandler = (visible: boolean) => {

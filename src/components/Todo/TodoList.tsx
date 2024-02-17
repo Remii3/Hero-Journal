@@ -13,6 +13,14 @@ import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
 import { selectuser } from '../../store/slices/userSlice';
 import { TodoStatus, User } from '../../types/types';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../screens/RootStack/RootStack';
+
+type TodoListNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'TodoItem'
+>;
 
 const fetchTodos = async (user: User) => {
   try {
@@ -41,11 +49,10 @@ const finishTodo = async (id: string, status: TodoStatus) => {
     status: status,
   });
 };
-
 export default function ToDoList() {
   const user = useSelector(selectuser);
   const queryClient = useQueryClient();
-
+  const navigation = useNavigation<TodoListNavigationProp>();
   const {
     data: todoList,
     isLoading: todoListIsLoading,
@@ -91,6 +98,10 @@ export default function ToDoList() {
               {finishTaskIsError && (
                 <Text>{(finishTaskError as Error).message}</Text>
               )}
+              <Button
+                title="Check it out!"
+                onPress={() => navigation.navigate('TodoItem', { id: todo.id })}
+              />
               <Text>{todo.title}</Text>
               <Text>{todo.status}</Text>
             </View>

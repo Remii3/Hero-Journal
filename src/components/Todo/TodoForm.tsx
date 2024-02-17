@@ -133,7 +133,7 @@ export default function TodoForm({
             {show && (
               <DateTimePicker
                 testID="dateTimePicker"
-                value={todoData.deadline}
+                value={todoData.deadline as Date}
                 mode="date"
                 is24Hour={true}
                 display="default"
