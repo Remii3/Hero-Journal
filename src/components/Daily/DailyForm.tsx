@@ -56,14 +56,14 @@ export default function DailyForm({
         <View>
           <View>
             <CustomTextInput
-              onChange={(text) => changeDailyData('title', text)}
+              onChangeText={(text) => changeDailyData('title', text)}
               value={dailyData.title}
               placeholder="Title"
             />
           </View>
           <View>
             <CustomTextInput
-              onChange={(text) => changeDailyData('description', text)}
+              onChangeText={(text) => changeDailyData('description', text)}
               value={dailyData.description}
               placeholder="Description"
             />

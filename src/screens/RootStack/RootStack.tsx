@@ -35,8 +35,8 @@ export default function RootStack() {
         </>
       ) : (
         <>
-          <stackNavigator.Screen name="Register" component={RegisterScreen} />
           <stackNavigator.Screen name="Login" component={LoginScreen} />
+          <stackNavigator.Screen name="Register" component={RegisterScreen} />
         </>
       )}
     </stackNavigator.Navigator>

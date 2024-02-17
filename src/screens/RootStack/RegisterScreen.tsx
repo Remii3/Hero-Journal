@@ -10,6 +10,7 @@ import {
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from './RootStack';
 import { doc, getDoc, getFirestore, setDoc } from 'firebase/firestore';
+import CustomButton from '../../components/ui/CustomButton';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
@@ -84,18 +85,18 @@ export default function RegisterScreen({ navigation }: Props) {
         <CustomTextInput
           placeholder="Email"
           value={email}
-          onChange={changeEmail}
+          onChangeText={changeEmail}
         />
       </View>
       <View>
         <CustomTextInput
           placeholder="Password"
           value={password}
-          onChange={changePassword}
+          onChangeText={changePassword}
         />
       </View>
-      <Button title="Register" onPress={onRegister} disabled={loading} />
-      <Button
+      <CustomButton title="Register" onPress={onRegister} disabled={loading} />
+      <CustomButton
         title="Already have an account"
         onPress={() => navigation.navigate('Login')}
       />

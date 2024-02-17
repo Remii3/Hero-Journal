@@ -1,8 +1,15 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import React from 'react';
+import {
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import React, { useLayoutEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from './RootStack';
-import { useQuery } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import {
   Timestamp,
   deleteDoc,
@@ -14,6 +21,8 @@ import {
 import { TodoTask } from '../../types/types';
 import { FirebaseError } from 'firebase/app';
 import { convertTimestampToDate } from '../../utils/convertTimestampToDate';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import CustomButton from '../../components/ui/CustomButton';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TodoItem'>;
 
@@ -29,15 +38,6 @@ const fetchTodoItem = async (id: string) => {
   }
 };
 
-const deleteTodoItem = async (id: string) => {
-  const db = getFirestore();
-  try {
-    await deleteDoc(doc(db, 'todo', id));
-  } catch (err) {
-    return Promise.reject(new Error((err as Error).message));
-  }
-};
-
 const editTodoItem = async (id: string, data: Partial<TodoTask>) => {
   const db = getFirestore();
   const docRef = doc(db, 'todo', id);
@@ -48,14 +48,71 @@ const editTodoItem = async (id: string, data: Partial<TodoTask>) => {
   }
 };
 
-export default function TodoItemScreen({ route }: Props) {
+const deleteTodoItem = async (id: string) => {
+  const db = getFirestore();
+  try {
+    return await deleteDoc(doc(db, 'todo', id));
+  } catch (err) {
+    return Promise.reject(new Error((err as Error).message));
+  }
+};
+
+export default function TodoItemScreen({ route, navigation }: Props) {
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery<TodoTask, FirebaseError>(
     'todoItem',
     () => fetchTodoItem(route.params.id) as Promise<TodoTask>,
   );
 
+  const {
+    mutate,
+    isLoading: isLoadingDelete,
+    isError: isErrorDelete,
+    error: errorDelete,
+  } = useMutation(deleteTodoItem, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('todoList');
+      setShowDeleteModal(false);
+      navigation.goBack();
+    },
+  });
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: data ? data.title : 'Loading...',
+      headerRight: () => (
+        <TouchableOpacity
+          disabled={isLoadingDelete}
+          onPress={() => setShowDeleteModal(true)}
+        >
+          <Ionicons name="trash" size={24} color={'#222'} />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation, data, isLoadingDelete, showDeleteModal]);
+
   return (
     <View>
+      <Modal animationType="slide" visible={showDeleteModal}>
+        <View>
+          <Text>Are you sure you want to delete this task?</Text>
+          {isErrorDelete && (
+            <Text>Error: {(errorDelete as FirebaseError).message}</Text>
+          )}
+          <CustomButton
+            title="Yes"
+            onPress={() => {
+              mutate(route.params.id);
+            }}
+          />
+          <CustomButton
+            title="No"
+            onPress={() => {
+              setShowDeleteModal(false);
+            }}
+          />
+        </View>
+      </Modal>
       {isError && <Text>Error: {error.message}</Text>}
       {isLoading && <Text>Loading...</Text>}
       {data && (

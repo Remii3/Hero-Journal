@@ -100,14 +100,14 @@ export default function TodoForm({
         <View>
           <View>
             <CustomTextInput
-              onChange={(text) => changeTodoData('title', text)}
+              onChangeText={(text) => changeTodoData('title', text)}
               value={todoData.title}
               placeholder="Title"
             />
           </View>
           <View>
             <CustomTextInput
-              onChange={(text) => changeTodoData('description', text)}
+              onChangeText={(text) => changeTodoData('description', text)}
               value={todoData.description}
               placeholder="Description"
             />
@@ -143,7 +143,7 @@ export default function TodoForm({
             <ScrollView>
               <View>
                 <CustomTextInput
-                  onChange={(text) => setTaskCheckListItem(text)}
+                  onChangeText={(text) => setTaskCheckListItem(text)}
                   value={taskCheckListItem}
                   placeholder="Add a subtask"
                 />

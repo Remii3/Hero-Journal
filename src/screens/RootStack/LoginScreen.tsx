@@ -1,20 +1,21 @@
-import { Button, StyleSheet, Text, View } from "react-native";
-import React, { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../../Constants/firebaseConfig";
-import CustomTextInput from "../../components/ui/CustomTextInput";
-import { useDispatch } from "react-redux";
-import { login } from "../../store/slices/userSlice";
+import { Button, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../../Constants/firebaseConfig';
+import CustomTextInput from '../../components/ui/CustomTextInput';
+import { useDispatch } from 'react-redux';
+import { login } from '../../store/slices/userSlice';
 
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "./RootStack";
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from './RootStack';
+import CustomButton from '../../components/ui/CustomButton';
 
-type Props = NativeStackScreenProps<RootStackParamList, "Login">;
+type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export default function LoginScreen({ navigation }: Props) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   const dispatch = useDispatch();
 
@@ -29,9 +30,9 @@ export default function LoginScreen({ navigation }: Props) {
               uid: user.uid,
               displayName: user.displayName,
             },
-          })
+          }),
         );
-        navigation.navigate("Home");
+        navigation.navigate('Home');
       })
       .catch((error) => {
         const errorMessage = error.message;
@@ -53,22 +54,22 @@ export default function LoginScreen({ navigation }: Props) {
         <CustomTextInput
           placeholder="Email"
           value={email}
-          onChange={changeEmail}
+          onChangeText={changeEmail}
         />
       </View>
       <View>
         <CustomTextInput
           placeholder="Password"
           value={password}
-          onChange={changePassword}
+          onChangeText={changePassword}
         />
       </View>
-      <Button title="Login" onPress={loginhandler} />
-      <Button
+      <CustomButton title="Login" onPress={loginhandler} />
+      <CustomButton
         title="No account yet?"
-        onPress={() => navigation.navigate("Register")}
+        onPress={() => navigation.navigate('Register')}
       />
-      {error && <Text style={{ color: "red" }}>{error}</Text>}
+      {error && <Text style={{ color: 'red' }}>{error}</Text>}
     </View>
   );
 }
