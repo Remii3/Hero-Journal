@@ -7,6 +7,7 @@ import { TodoTask, User } from '../../types/types';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../screens/RootStack/RootStack';
+import { useRefetchUserData } from '../../hooks/useRefetchUserData';
 
 type TodoListNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -34,6 +35,7 @@ export default function ToDoList({ fetchTodos, finishTodo }: ToDoListProps) {
   const user = useSelector(selectuser);
   const queryClient = useQueryClient();
   const navigation = useNavigation<TodoListNavigationProp>();
+  const { refetchUserData } = useRefetchUserData(user.user?.uid || '');
   const {
     data: todoList,
     isLoading: isLoadingTodoList,
@@ -56,6 +58,7 @@ export default function ToDoList({ fetchTodos, finishTodo }: ToDoListProps) {
     {
       onSuccess: () => {
         queryClient.invalidateQueries('todoList');
+        refetchUserData();
       },
     },
   );

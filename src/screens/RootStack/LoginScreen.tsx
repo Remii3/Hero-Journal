@@ -1,30 +1,16 @@
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../../Constants/firebaseConfig';
 import CustomTextInput from '../../components/ui/CustomTextInput';
 import { useDispatch } from 'react-redux';
-import { login } from '../../store/slices/userSlice';
-
+import { updateUserData } from '../../store/slices/userSlice';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from './RootStack';
 import CustomButton from '../../components/ui/CustomButton';
-import { doc, getDoc, getFirestore } from 'firebase/firestore';
-import { User } from '../../types/types';
-import { useMutation } from 'react-query';
+import { fetchUserData } from '../../services/userService';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
-
-const fetchUserData = async (user: any) => {
-  const db = getFirestore();
-  const userRef = doc(db, 'users', user.uid);
-  const docSnap = await getDoc(userRef);
-  if (docSnap.exists()) {
-    return docSnap.data();
-  } else {
-    console.log('No such document!');
-  }
-};
 
 export default function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
@@ -33,28 +19,14 @@ export default function LoginScreen({ navigation }: Props) {
 
   const dispatch = useDispatch();
 
-  const {} = useMutation('fetchUserData');
-
   const loginhandler = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then(async (userCredential) => {
-        const user = userCredential.user;
-        const db = getFirestore();
-        const userRef = doc(db, 'users', user.uid);
-        const docSnap = await getDoc(userRef);
-        return docSnap.data();
-      })
-      .then((user) => {
-        if (user) {
-          dispatch(
-            login({
-              user: {
-                ...user,
-              },
-            }),
-          );
-          navigation.navigate('Home');
-        }
+        const uid = userCredential.user.uid;
+        const userData = await fetchUserData(uid);
+
+        dispatch(updateUserData(userData));
+        navigation.navigate('Home');
       })
       .catch((error) => {
         const errorMessage = error.message;
