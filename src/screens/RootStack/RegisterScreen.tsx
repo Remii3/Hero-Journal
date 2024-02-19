@@ -80,29 +80,51 @@ export default function RegisterScreen({ navigation }: Props) {
   };
 
   return (
-    <View>
-      <View>
-        <CustomTextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={changeEmail}
-        />
+    <View style={styles.container}>
+      <View style={styles.inputsConatainer}>
+        <View>
+          <CustomTextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={changeEmail}
+          />
+        </View>
+        <View>
+          <CustomTextInput
+            placeholder="Password"
+            value={password}
+            onChangeText={changePassword}
+          />
+        </View>
       </View>
-      <View>
-        <CustomTextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={changePassword}
+      <View style={styles.btnsContainer}>
+        <CustomButton
+          title="Register"
+          onPress={onRegister}
+          disabled={loading}
         />
+        <CustomButton
+          title="Already have an account"
+          onPress={() => navigation.navigate('Login')}
+          type="outline"
+        />
+        {error && <Text>{error}</Text>}
       </View>
-      <CustomButton title="Register" onPress={onRegister} disabled={loading} />
-      <CustomButton
-        title="Already have an account"
-        onPress={() => navigation.navigate('Login')}
-      />
-      {error && <Text>{error}</Text>}
     </View>
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 20,
+    padding: 20,
+  },
+  inputsConatainer: {
+    gap: 10,
+  },
+  btnsContainer: {
+    gap: 10,
+  },
+});

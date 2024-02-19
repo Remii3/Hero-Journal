@@ -9,6 +9,7 @@ import {
   doc,
   getDocs,
   getFirestore,
+  increment,
   orderBy,
   query,
   updateDoc,
@@ -50,11 +51,23 @@ const uploadNewTodo = async (todo: TodoTask) => {
   }
 };
 
-const finishTodo = async (id: string, status: TodoTask['status']) => {
+const finishTodo = async (
+  id: string,
+  uid: string,
+  status: TodoTask['status'],
+  difficulty: TodoTask['difficulty'],
+) => {
   const db = getFirestore();
   const todoRef = doc(db, 'todo', id);
+  const userRef = doc(db, 'users', uid);
   await updateDoc(todoRef, {
     status: status,
+  });
+
+  const incrementValue = status === 'done' ? 1 : -1;
+
+  await updateDoc(userRef, {
+    [`todos.done.quantity.${difficulty}`]: increment(incrementValue),
   });
 };
 

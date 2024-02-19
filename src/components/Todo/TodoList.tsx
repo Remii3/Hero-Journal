@@ -22,7 +22,12 @@ type ToDoListProps = {
       difficulty: TodoTask['difficulty'];
     }[]
   >;
-  finishTodo: (id: string, status: TodoTask['status']) => Promise<void>;
+  finishTodo: (
+    id: string,
+    uid: string,
+    status: TodoTask['status'],
+    difficulty: TodoTask['difficulty'],
+  ) => Promise<void>;
 };
 
 export default function ToDoList({ fetchTodos, finishTodo }: ToDoListProps) {
@@ -42,8 +47,12 @@ export default function ToDoList({ fetchTodos, finishTodo }: ToDoListProps) {
     isError: isErrorFinishTodo,
     error: errorFinishTodo,
   } = useMutation(
-    (params: { id: string; status: TodoTask['status'] }) =>
-      finishTodo(params.id, params.status),
+    (params: {
+      id: string;
+      uid: string;
+      status: TodoTask['status'];
+      difficulty: TodoTask['difficulty'];
+    }) => finishTodo(params.id, params.uid, params.status, params.difficulty),
     {
       onSuccess: () => {
         queryClient.invalidateQueries('todoList');
@@ -53,10 +62,12 @@ export default function ToDoList({ fetchTodos, finishTodo }: ToDoListProps) {
 
   const finishTodoHandler = async (
     id: string,
+    uid: string,
     newStatus: TodoTask['status'],
+    difficulty: TodoTask['difficulty'],
   ) => {
     const status = newStatus === 'done' ? 'pending' : 'done';
-    mutateFinishTodo({ id, status });
+    mutateFinishTodo({ id, uid, status, difficulty });
   };
 
   return (
@@ -72,7 +83,14 @@ export default function ToDoList({ fetchTodos, finishTodo }: ToDoListProps) {
                 <Button
                   title={isLoadingFinishTodo ? 'Loading...' : 'Finish'}
                   disabled={isLoadingFinishTodo}
-                  onPress={() => finishTodoHandler(todo.id, todo.status)}
+                  onPress={() =>
+                    finishTodoHandler(
+                      todo.id,
+                      user.user?.uid || '',
+                      todo.status,
+                      todo.difficulty,
+                    )
+                  }
                 />
                 {isErrorFinishTodo && (
                   <Text>{(errorFinishTodo as Error).message}</Text>

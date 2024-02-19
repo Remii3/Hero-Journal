@@ -6,63 +6,66 @@ import {
   TouchableOpacity,
   View,
   ButtonProps,
+  Pressable,
 } from 'react-native';
 import React from 'react';
+import { colors } from '../../../Constants/colors';
 
-interface CustomButtonProps extends ButtonProps {}
+interface CustomButtonProps extends ButtonProps {
+  type?: 'primary' | 'outline';
+}
 
 export default function CustomButton({
   title,
   onPress,
-  color = '#32f',
   disabled = false,
+  type = 'primary',
 }: CustomButtonProps) {
-  const content = (
-    <View
-      style={[
-        styles.button,
-        { backgroundColor: color },
-        disabled && styles.disabled,
-      ]}
-    >
-      <Text style={styles.text}>{title}</Text>
-    </View>
-  );
-
-  return Platform.OS === 'android' ? (
-    <TouchableNativeFeedback
-      onPress={onPress}
-      disabled={disabled}
-      style={[
-        styles.button,
-        { backgroundColor: color },
-        disabled && styles.disabled,
-      ]}
-    >
-      {content}
-    </TouchableNativeFeedback>
-  ) : (
+  return (
     <TouchableOpacity
       onPress={onPress}
-      style={{ backgroundColor: color }}
+      activeOpacity={0.7}
       disabled={disabled}
+      style={[
+        styles.button,
+        disabled && styles.disabled,
+        type === 'primary' ? styles.primary : styles.outline,
+      ]}
     >
-      {content}
+      <Text
+        style={type === 'primary' ? styles.textPrimary : styles.textOutline}
+      >
+        {title}
+      </Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    padding: 14,
     borderRadius: 8,
-    margin: 5,
     alignItems: 'center',
     justifyContent: 'center',
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    elevation: 3,
   },
-  text: {
-    color: 'white',
+  primary: {
+    backgroundColor: colors.primary,
+  },
+  outline: {
+    backgroundColor: colors.white,
+  },
+  textPrimary: {
+    color: colors.white,
     fontSize: 16,
+    fontWeight: '500',
+  },
+  textOutline: {
+    color: colors.primaryText,
+    fontSize: 16,
+    fontWeight: '500',
   },
   disabled: {
     backgroundColor: 'grey',
