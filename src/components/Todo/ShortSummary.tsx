@@ -4,7 +4,8 @@ import { useSelector } from 'react-redux';
 import { selectuser } from '../../store/slices/userSlice';
 
 export default function ShortSummary() {
-  const { user } = useSelector(selectuser);
+  const user = useSelector(selectuser);
+
   if (!user) {
     return (
       <View>

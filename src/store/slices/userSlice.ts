@@ -20,9 +20,7 @@ export const { logout, updateUserData } = userSlice.actions;
 
 export const selectuser = (state: {
   user: {
-    user: {
-      user: null | User;
-    };
+    user: User | null;
   };
 }) => state.user.user;
 

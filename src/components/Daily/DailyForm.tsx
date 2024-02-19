@@ -25,7 +25,7 @@ export default function DailyForm({
     description: '',
     status: 'pending',
     difficulty: 'easy',
-    userId: user.user?.uid ?? '',
+    userId: user?.uid ?? '',
     finishTime: null,
     createdAt: new Date(),
   });

@@ -24,7 +24,6 @@ export default function LoginScreen({ navigation }: Props) {
       .then(async (userCredential) => {
         const uid = userCredential.user.uid;
         const userData = await fetchUserData(uid);
-
         dispatch(updateUserData(userData));
         navigation.navigate('Home');
       })

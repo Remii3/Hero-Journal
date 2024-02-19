@@ -37,7 +37,7 @@ export default function TodoForm({
     deadline: new Date(),
     status: 'pending',
     checkList: [],
-    userId: user.user?.uid ?? '',
+    userId: user?.uid ?? '',
     createdAt: new Date(),
   });
   const [show, setShow] = useState(false);

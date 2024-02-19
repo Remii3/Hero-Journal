@@ -35,13 +35,13 @@ export default function DailyList({
   const user = useSelector(selectuser);
   const queryClient = useQueryClient();
   const navigation = useNavigation<RootNavigationTypes>();
-  const { refetchUserData } = useRefetchUserData(user.user?.uid || '');
+  const { refetchUserData } = useRefetchUserData(user?.uid || '');
   const {
     data: dailyList,
     isLoading: isLoadingDailyList,
     isError: isErrorDailyList,
     error: errorDailyList,
-  } = useQuery('dailyList', () => fetchDailyList(user.user!));
+  } = useQuery('dailyList', () => fetchDailyList(user!));
 
   const {
     mutate: mutateFinishDaily,

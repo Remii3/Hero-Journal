@@ -35,13 +35,13 @@ export default function ToDoList({ fetchTodos, finishTodo }: ToDoListProps) {
   const user = useSelector(selectuser);
   const queryClient = useQueryClient();
   const navigation = useNavigation<TodoListNavigationProp>();
-  const { refetchUserData } = useRefetchUserData(user.user?.uid || '');
+  const { refetchUserData } = useRefetchUserData(user?.uid || '');
   const {
     data: todoList,
     isLoading: isLoadingTodoList,
     isError: isErrorTodoList,
     error: errorTodoList,
-  } = useQuery('todoList', () => fetchTodos(user.user!));
+  } = useQuery('todoList', () => fetchTodos(user!));
 
   const {
     mutate: mutateFinishTodo,
@@ -72,7 +72,6 @@ export default function ToDoList({ fetchTodos, finishTodo }: ToDoListProps) {
     const status = newStatus === 'done' ? 'pending' : 'done';
     mutateFinishTodo({ id, uid, status, difficulty });
   };
-
   return (
     <View>
       {isErrorTodoList && <Text>{(errorTodoList as Error).message}</Text>}
@@ -89,7 +88,7 @@ export default function ToDoList({ fetchTodos, finishTodo }: ToDoListProps) {
                   onPress={() =>
                     finishTodoHandler(
                       todo.id,
-                      user.user?.uid || '',
+                      user?.uid || '',
                       todo.status,
                       todo.difficulty,
                     )
