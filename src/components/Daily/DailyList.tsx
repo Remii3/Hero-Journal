@@ -9,6 +9,7 @@ import { RootStackParamList } from '../../screens/RootStack/RootStack';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import { FirebaseError } from 'firebase/app';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useRefetchUserData } from '../../hooks/useRefetchUserData';
 
 type RootNavigationTypes = NativeStackNavigationProp<
   RootStackParamList,
@@ -16,9 +17,7 @@ type RootNavigationTypes = NativeStackNavigationProp<
 >;
 
 type DailyListProps = {
-  fetchDailyList: (
-    user: User,
-  ) => Promise<
+  fetchDailyList: (user: User) => Promise<
     {
       id: string;
       title: string;
@@ -36,6 +35,7 @@ export default function DailyList({
   const user = useSelector(selectuser);
   const queryClient = useQueryClient();
   const navigation = useNavigation<RootNavigationTypes>();
+  const { refetchUserData } = useRefetchUserData(user.user?.uid || '');
   const {
     data: dailyList,
     isLoading: isLoadingDailyList,
@@ -54,6 +54,7 @@ export default function DailyList({
     {
       onSuccess: () => {
         queryClient.invalidateQueries('dailyList');
+        refetchUserData();
       },
     },
   );

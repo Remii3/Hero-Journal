@@ -1,12 +1,8 @@
 import {
-  Platform,
   StyleSheet,
   Text,
-  TouchableNativeFeedback,
-  TouchableOpacity,
-  View,
   ButtonProps,
-  Pressable,
+  TouchableHighlight,
 } from 'react-native';
 import React from 'react';
 import { colors } from '../../../Constants/colors';
@@ -22,52 +18,56 @@ export default function CustomButton({
   type = 'primary',
 }: CustomButtonProps) {
   return (
-    <TouchableOpacity
+    <TouchableHighlight
       onPress={onPress}
-      activeOpacity={0.7}
       disabled={disabled}
       style={[
         styles.button,
         disabled && styles.disabled,
-        type === 'primary' ? styles.primary : styles.outline,
+        type === 'primary' ? styles.primary : styles.secondary,
       ]}
+      underlayColor="#0056b3"
     >
       <Text
-        style={type === 'primary' ? styles.textPrimary : styles.textOutline}
+        style={type === 'primary' ? styles.textPrimary : styles.textSecondary}
       >
         {title}
       </Text>
-    </TouchableOpacity>
+    </TouchableHighlight>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 8,
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 48,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    elevation: 3,
+    elevation: 2,
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#000',
+    textTransform: 'uppercase',
   },
   primary: {
     backgroundColor: colors.primary,
   },
-  outline: {
-    backgroundColor: colors.white,
+  secondary: {
+    backgroundColor: colors.secondary,
   },
   textPrimary: {
-    color: colors.white,
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  textOutline: {
     color: colors.primaryText,
     fontSize: 16,
     fontWeight: '500',
   },
+  textSecondary: {
+    color: colors.secondaryText,
+    fontSize: 16,
+    fontWeight: '500',
+  },
   disabled: {
-    backgroundColor: 'grey',
+    opacity: 0.5,
   },
 });
