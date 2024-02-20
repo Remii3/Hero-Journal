@@ -23,6 +23,7 @@ import { FirebaseError } from 'firebase/app';
 import { convertTimestampToDate } from '../../utils/convertTimestampToDate';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import CustomButton from '../../components/ui/CustomButton';
+import CustomTextInput from '../../components/ui/CustomTextInput';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'TodoItem'>;
 
@@ -59,11 +60,22 @@ const deleteTodoItem = async (id: string) => {
 
 export default function TodoItemScreen({ route, navigation }: Props) {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+
   const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery<TodoTask, FirebaseError>(
     'todoItem',
     () => fetchTodoItem(route.params.id) as Promise<TodoTask>,
   );
+
+  const [editFormData, setEditFormData] = useState<Partial<TodoTask>>({
+    title: data?.title || '',
+    status: (data?.status || 'pending') as TodoTask['status'],
+    description: data?.description || '',
+    difficulty: (data?.difficulty || '') as TodoTask['difficulty'],
+    deadline: data?.deadline || new Date(),
+    checkList: data?.checkList || [],
+  });
 
   const {
     mutate,
@@ -77,19 +89,45 @@ export default function TodoItemScreen({ route, navigation }: Props) {
       navigation.goBack();
     },
   });
+
+  const {
+    mutate: mutateEdit,
+    isLoading: isLoadingEdit,
+    isError: isErrorEdit,
+    error: errorEdit,
+  } = useMutation(
+    ({ id, data }: { id: string; data: Partial<TodoTask> }) =>
+      editTodoItem(id, data),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('todoList');
+        queryClient.invalidateQueries('todoItem');
+        setShowEditModal(false);
+      },
+    },
+  );
+
   useLayoutEffect(() => {
     navigation.setOptions({
       title: data ? data.title : 'Loading...',
       headerRight: () => (
-        <TouchableOpacity
-          disabled={isLoadingDelete}
-          onPress={() => setShowDeleteModal(true)}
-        >
-          <Ionicons name="trash" size={24} color={'#222'} />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row' }}>
+          <TouchableOpacity
+            onPress={() => setShowEditModal(true)}
+            style={{ marginRight: 15 }}
+          >
+            <Ionicons name="create" size={24} color={'#222'} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            disabled={isLoadingDelete}
+            onPress={() => setShowDeleteModal(true)}
+          >
+            <Ionicons name="trash" size={24} color={'#222'} />
+          </TouchableOpacity>
+        </View>
       ),
     });
-  }, [navigation, data, isLoadingDelete, showDeleteModal]);
+  }, [navigation, data, isLoadingDelete, showDeleteModal, showEditModal]);
 
   return (
     <View>
@@ -109,6 +147,30 @@ export default function TodoItemScreen({ route, navigation }: Props) {
             title="No"
             onPress={() => {
               setShowDeleteModal(false);
+            }}
+          />
+        </View>
+      </Modal>
+      <Modal animationType="slide" visible={showEditModal}>
+        <View style={{ padding: 20 }}>
+          <Text>Edit Task</Text>
+          <CustomTextInput
+            value={editFormData.title}
+            onChangeText={(text) =>
+              setEditFormData({ ...editFormData, title: text })
+            }
+            placeholder="Title"
+          />
+          <CustomButton
+            title="Save Changes"
+            onPress={() => {
+              mutateEdit({ id: route.params.id, data: editFormData });
+            }}
+          />
+          <CustomButton
+            title="Cancel"
+            onPress={() => {
+              setShowEditModal(false);
             }}
           />
         </View>
